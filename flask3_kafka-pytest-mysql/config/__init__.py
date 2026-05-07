@@ -34,8 +34,14 @@ from app.files.products import api_prodpic
 
 from config.main import main_bp
 
-def create_app():
+def create_app(config_name='default'):     
     app = Flask(__name__, static_url_path='', static_folder='templates')
+    # if config_name == 'testing':
+    #     print("config testing.....")
+    #     app.config.from_object('config.TestingConfig')
+    # else:
+    #     print("config development....")
+    #     app.config.from_object('config.DevelopmentConfig')
 
     kafka_consumer_service = KafkaConsumerService(app)
     # Start the consumer in a daemon thread so it doesn't block Flask
@@ -87,11 +93,6 @@ def create_app():
     app.register_blueprint(api_userpic)
     
     app.register_blueprint(main_bp)
-
-
-
-
-    
 
     return app
 

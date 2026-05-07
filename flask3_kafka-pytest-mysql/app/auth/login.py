@@ -16,7 +16,10 @@ def delivery_report(err, msg):
 
 @api_signin.route('/signin', methods=['POST'])
 def user_login():
-    data = request.get_json()
+    data = request.get_json(silent=True)    
+    if not data:
+        return jsonify({"message": "Invalid or missing JSON"}), 400    
+
     username = data.get("username")
     password = data.get("password")
 
@@ -39,8 +42,7 @@ def user_login():
         on_delivery=delivery_report
     )
 
-    producer.flush()
-
+    producer.poll(0) 
 
     return jsonify(user_info), 200
 

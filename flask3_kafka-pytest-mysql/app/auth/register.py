@@ -5,7 +5,7 @@ from confluent_kafka import Producer # type: ignore
 
 api_signup = Blueprint('api_signup', __name__, url_prefix='/auth')
 
-producer_config = {'bootstrap.servers': '127.0.0.1:9092'}
+producer_config = {'bootstrap.servers': '127.0.0.1:9092', 'linger.ms': 10}   # Reduced latency for 10ms
 producer = Producer(producer_config)
 
 def delivery_report(err, msg):
@@ -33,7 +33,7 @@ def userRegister():
             on_delivery=delivery_report
         )
 
-        producer.flush()
+        producer.flush(timeout=5)
 
         return jsonify({
             "message": "You have registered successfully, please sign-in now."
