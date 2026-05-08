@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask # type: ignore
 from flask_sqlalchemy import SQLAlchemy # type: ignore
 from sqlalchemy.orm import DeclarativeBase # type: ignore
 from sqlalchemy import text # type: ignore

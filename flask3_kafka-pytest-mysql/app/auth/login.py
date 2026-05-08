@@ -1,6 +1,5 @@
 import json
 from flask import Blueprint, jsonify, request # type: ignore
-from app.services.auth_service import authenticate_user
 from confluent_kafka import Producer # type: ignore
 
 api_signin = Blueprint('api_signin', __name__, url_prefix='/auth')
@@ -24,6 +23,7 @@ def user_login():
     password = data.get("password")
 
     # Call the service
+    from app.services.auth_service import authenticate_user
     error, user_info = authenticate_user(username, password)
 
     if error:

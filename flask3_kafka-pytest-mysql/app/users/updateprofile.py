@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity # type: ignore
 from app.services.user_service import update_user_profile
 from confluent_kafka import Producer # type: ignore
 
-api_profile = Blueprint('api_profile', __name__, url_prefix='/api') # Use url_prefix to group all API routes
+api_profile = Blueprint('api_profile', __name__, url_prefix='/api') 
 
 producer_config = {'bootstrap.servers': 'localhost:9092'}
 producer = Producer(producer_config)

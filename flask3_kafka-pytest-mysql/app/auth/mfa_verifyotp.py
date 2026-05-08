@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity # type: ignore
 
 api_otp = Blueprint('api_otp', __name__, url_prefix='/auth') 
 
-producer_config = {'bootstrap.servers': 'localhost:9092'}
+producer_config = {'bootstrap.servers': '127.0.0.1:9092', 'linger.ms': 10}   # Reduced latency for 10ms
 producer = Producer(producer_config)
 
 def delivery_report(err, msg):
@@ -18,7 +18,7 @@ def delivery_report(err, msg):
 
 @api_otp.route('/mfa/verifytotp/<int:id>', methods=['PATCH'])
 @jwt_required()
-def verify_otp(id):
+def verify_totp(id):
     data = request.get_json()
     otp = data.get("otp")
     user_id = get_jwt_identity() 
@@ -41,11 +41,9 @@ def verify_otp(id):
             on_delivery=delivery_report
         )
 
-        producer.flush()
-
+        producer.flush(timeout=5)
 
         return jsonify(result), 200
     except Exception as e:
-        # Catch the BadRequest or NotFound raised in the service
         return jsonify({"message": str(e)}), getattr(e, 'code', 400)
 

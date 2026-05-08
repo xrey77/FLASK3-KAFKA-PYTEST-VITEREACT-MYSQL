@@ -8,7 +8,7 @@ from confluent_kafka import Producer # type: ignore
 
 api_getuserid = Blueprint('api_getuserid', __name__, url_prefix='/api') 
 
-producer_config = {'bootstrap.servers': '127.0.0.1:9092'}
+producer_config = {'bootstrap.servers': '127.0.0.1:9092', 'linger.ms': 10}   # Reduced latency for 10ms
 producer = Producer(producer_config)
 
 def delivery_report(err, msg):
@@ -36,7 +36,7 @@ def get_user_id(id):
             on_delivery=delivery_report
         )        
 
-        producer.flush()
+        producer.flush(timeout=5)
 
         return jsonify(user_data), 200
     except Exception as e:

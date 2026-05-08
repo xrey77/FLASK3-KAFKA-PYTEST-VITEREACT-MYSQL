@@ -4,7 +4,7 @@ from app.services.user_service import update_profile_picture
 from confluent_kafka import Producer # type: ignore
 from flask_jwt_extended import jwt_required, get_jwt_identity # type: ignore
 
-api_profilepic = Blueprint('api_profilepic', __name__, url_prefix='/api')
+api_uploadpic = Blueprint('api_uploadpic', __name__, url_prefix='/api')
 
 producer_config = {'bootstrap.servers': 'localhost:9092'}
 producer = Producer(producer_config)
@@ -15,7 +15,7 @@ def delivery_report(err, msg):
     else:
         print(f"Upload Profile Picture Message delivered to {msg.topic()} [{msg.partition()}]")
 
-@api_profilepic.route('/uploadpicture/<int:id>', methods=['PATCH'])
+@api_uploadpic.route('/uploadpicture/<int:id>', methods=['PATCH'])
 @jwt_required()
 def profile_picture(id):
     user_id = get_jwt_identity() 

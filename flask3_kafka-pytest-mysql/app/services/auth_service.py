@@ -3,15 +3,16 @@ import qrcode # type: ignore
 import base64
 import io
 from config.extensions import db
-from app.models.user import Users, Roles, Departments
 from flask_bcrypt import Bcrypt, check_password_hash # type: ignore
 from flask_jwt_extended import create_access_token # type: ignore
 from werkzeug.exceptions import NotFound, BadRequest # type: ignore
+from flask_sqlalchemy import SQLAlchemy # type: ignore
 
 bcrypt = Bcrypt()
 
 def register_user(data):
     # 1. Validation Logic
+    from app.models.user import Users 
     if Users.query.filter_by(email=data.get("email")).first():
         raise ValueError("Email Address is already taken.")
     
@@ -39,8 +40,8 @@ def register_user(data):
     return user
 
 
-
 def authenticate_user(username, password):
+    from app.models.user import Users, Roles, Departments 
     user = Users.query.filter_by(username=username).first()
 
     if not user:
@@ -74,6 +75,7 @@ def authenticate_user(username, password):
 
 
 def mfa_activation(user_id, enable):
+    from app.models.user import Users 
     user = db.get_or_404(Users, user_id)
 
     if enable:
@@ -102,7 +104,7 @@ def mfa_activation(user_id, enable):
         return {"enabled": False}
     
 def verify_user_totp(user_id, otp_code):
-    # Fetch user or automatically trigger 404
+    from app.models.user import Users     
     user = db.get_or_404(Users, user_id)
     
     totp = pyotp.TOTP(user.secret)
@@ -114,3 +116,5 @@ def verify_user_totp(user_id, otp_code):
         }
     
     raise BadRequest("Invalid OTP code, please try again.")
+
+# from app.models.user import Users, Roles, Departments

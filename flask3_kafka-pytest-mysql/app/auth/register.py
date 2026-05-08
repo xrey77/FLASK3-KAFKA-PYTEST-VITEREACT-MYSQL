@@ -1,6 +1,5 @@
 import json
 from flask import Blueprint, jsonify, request # type: ignore
-from app.services.auth_service import register_user
 from confluent_kafka import Producer # type: ignore
 
 api_signup = Blueprint('api_signup', __name__, url_prefix='/auth')
@@ -16,6 +15,7 @@ def delivery_report(err, msg):
 
 @api_signup.route('/signup', methods=['POST'])
 def userRegister():
+    from app.services.auth_service import register_user    
     req_data = request.get_json()
     
     try:

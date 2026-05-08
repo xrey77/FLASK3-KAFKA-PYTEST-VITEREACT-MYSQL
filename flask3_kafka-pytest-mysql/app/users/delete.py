@@ -20,28 +20,26 @@ def delivery_report(err, msg):
 @api_deleteuser.route('/deleteuser/<int:id>', methods=['DELETE'])
 @jwt_required()
 def deleteUser(id):
-    user =  db.get_or_404(Users, id)    
-    if user is not None:
-        db.session.delete(user)     
-        db.session.commit()
+    try:
+        user =  db.get_or_404(Users, id)    
+        if user is not None:
+            db.session.delete(user)     
+            db.session.commit()
+            
+            message_payload = {
+                "event": "user_delete",
+                "user_id": user.id
+            }
+            
+            producer.produce(
+                'central-topic', 
+                value=json.dumps(message_payload).encode('utf-8'),
+                on_delivery=delivery_report
+            )
+
+            producer.flush()
+
+            return jsonify({'message': f'User ID {id} has been deleted.'}), 200
         
-        message_payload = {
-            "event": "user_delete",
-            "user_id": user.id
-        }
-        
-        producer.produce(
-            'central-topic', 
-            value=json.dumps(message_payload).encode('utf-8'),
-            on_delivery=delivery_report
-        )
-
-        producer.flush()
-
-
-        return jsonify({'message': f'User ID {id} has been deleted.'}), 200
-    else:
-        return jsonify({
-            "message": "User ID not found."
-        }), 200
-
+    except Exception as e:
+        return jsonify({"message": "User ID not found."}), 404

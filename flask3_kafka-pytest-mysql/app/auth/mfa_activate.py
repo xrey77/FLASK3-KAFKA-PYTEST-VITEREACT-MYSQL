@@ -1,12 +1,12 @@
 import json
 from flask import Blueprint, jsonify, request # type: ignore
-from app.services.auth_service import mfa_activation
 from flask_jwt_extended import jwt_required, get_jwt_identity # type: ignore
 from confluent_kafka import Producer # type: ignore
+from app.services.auth_service import mfa_activation
 
-api_mfa = Blueprint('api_mfa', __name__, url_prefix='/auth') # Use url_prefix to group all API routes
+api_mfa = Blueprint('api_mfa', __name__, url_prefix='/auth') 
 
-producer_config = {'bootstrap.servers': 'localhost:9092'}
+producer_config = {'bootstrap.servers': '127.0.0.1:9092', 'linger.ms': 10}   # Reduced latency for 10ms
 producer = Producer(producer_config)
 
 def delivery_report(err, msg):
@@ -17,10 +17,11 @@ def delivery_report(err, msg):
 
 @api_mfa.route('/mfa/activate/<int:id>', methods=['PATCH'])
 @jwt_required()
-def mfa_activate(id):
+def mfa_activated(id):
     data = request.get_json()
     enable_mfa = data.get("TwoFactorEnabled", False)
     user_id = get_jwt_identity() 
+
     result = mfa_activation(id, enable_mfa)
 
     if result.get("enabled"):
@@ -36,7 +37,7 @@ def mfa_activate(id):
             on_delivery=delivery_report
         )
 
-        producer.flush()
+        producer.flush(timeout=5)
 
         return jsonify({
             "qrcodeurl": result["qrcodeurl"],
@@ -56,7 +57,7 @@ def mfa_activate(id):
         on_delivery=delivery_report
     )
 
-    producer.flush()
+    producer.flush(timeout=5)
 
     return jsonify({
         "message": "Multi-Factor Authenticator has been disabled."

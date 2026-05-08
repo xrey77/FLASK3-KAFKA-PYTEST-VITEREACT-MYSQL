@@ -1,21 +1,21 @@
 # tests/conftest.py
 import pytest # type: ignore
-from run import app as flask_app  # Import your actual app instance
+from unittest.mock import MagicMock
+import confluent_kafka  # type: ignore
 
-@pytest.fixture(scope="module")
-def app():
-    # Set testing mode to True to enable error propagation and other test features
-    flask_app.config.update({
-        "TESTING": True,
-    })
+@pytest.fixture
+def mock_producer(mocker):
+    """
+    Mocks the confluent_kafka.Producer class.
+    """
+    # Patch the Producer class directly
+    mock_prod = mocker.patch("confluent_kafka.Producer")
     
-    # Optional: setup code (e.g., database creation) goes here
+    # Create a mock instance
+    instance = mock_prod.return_value
     
-    yield flask_app
+    # Mock the produce and flush methods
+    instance.produce = MagicMock()
+    instance.flush = MagicMock()
     
-    # Optional: teardown code (e.g., clearing database) goes here
-
-@pytest.fixture(scope="module")
-def client(app):
-    """A test client for the app."""
-    return app.test_client()
+    return instance

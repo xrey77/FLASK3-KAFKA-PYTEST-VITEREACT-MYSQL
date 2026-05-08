@@ -3,9 +3,9 @@ from flask import Blueprint, jsonify # type: ignore
 from app.services.product_service import get_paginated_products
 from confluent_kafka import Producer # type: ignore
 
-api_prodlist = Blueprint('api_prodlist', __name__, url_prefix='/api') # Use url_prefix to group all API routes
+api_prodlist = Blueprint('api_prodlist', __name__, url_prefix='/api') 
 
-producer_config = {'bootstrap.servers': '127.0.0.1:9092'}
+producer_config = {'bootstrap.servers': '127.0.0.1:9092', 'linger.ms': 10}   # Reduced latency for 10ms
 producer = Producer(producer_config)
 
 def delivery_report(err, msg):
@@ -35,6 +35,6 @@ def product_list(page):
         on_delivery=delivery_report
     )
 
-    producer.flush()
+    producer.flush(timeout=5)
 
     return jsonify(data), 200
