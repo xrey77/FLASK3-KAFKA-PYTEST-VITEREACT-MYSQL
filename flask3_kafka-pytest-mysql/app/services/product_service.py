@@ -2,6 +2,7 @@ import math
 from sqlalchemy import select, func, or_ # type: ignore
 from config.extensions import db
 from app.models.product import Products
+from app.models.sale import Sales
 from werkzeug.exceptions import NotFound # type: ignore
 from flask import abort # type: ignore
 
@@ -48,12 +49,27 @@ def get_product_search_results(page, keyword, per_page=5):
     
     products = [item.to_dict() for item in pagination.items]
 
-    # if not pagination.total:
-    #     return None
-
     return {
         "page": page,
         "totpage": total_pages,
         "totalrecords": tot_records,
         "products": products
     }
+
+
+def get_all_sales_service():
+    query = db.select(Sales)
+    sales_records = db.session.execute(query).scalars().all()
+
+    if not sales_records:
+        return None
+
+    sales_list = []
+    for sale in sales_records:
+        sales_list.append({
+            "id": sale.id,
+            "salesamount": sale.salesamount,
+            "salesdate": sale.salesdate.isoformat() if sale.salesdate else None
+        })
+
+    return sales_list
